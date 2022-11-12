@@ -1,0 +1,28 @@
+body {
+    background-color: gainsboro;
+    margin: 0;
+}
+
+h1 {
+    font-size: 2em;
+    padding-left: 8px;
+    background-color: bisque;
+    margin: 0;
+}
+
+div.main {
+    display: flex;
+}
+
+.code {
+    flex: 0 1 auto;
+    min-width: 640px;
+    background-color: white;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    white-space: pre;
+}
+canvas#display {
+    flex: 0 1 auto;
+    background-color: #443;
+    border: black 2px solid;
+}

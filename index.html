@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>beady-eye</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+    <h1>&#128065; beady-eye: displayio in javascript</h1>
+    <div class="main">
+        <div class="code">
+your message goes here
+several lines
+of wonderful text
+        </div>
+    <canvas id="display" width="320" height="480"></canvas>
+    </div>
+    <script>
+        let canvas = document.getElementById("display");
+        let display = {
+            canvas: canvas,
+            root_group: null,
+            renderer: null,
+            T: 250, //milliseconds
+            refresh: function() {
+                if (this.root_group) {
+                    const context = this.canvas.getContext('2d');
+                    context.clearRect(0,0,this.canvas.width,this.canvas.height);
+                    this.root_group.render(context);
+                }
+            },
+            show: function(group) {
+                this.root_group = group;
+                this.refresh();
+            }
+        }
+        let group = {
+            content: [],
+            render: function(context){
+                this.content.forEach(item => item.render(context));
+            }
+        }
+        let rect = {
+            x:0, y:0,
+            width: 320-5*2, height: 120,
+            fill: 'cornsilk',
+            render: function(context) {
+                context.fillStyle=this.fill;
+                context.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+    
+        let a = Object.create(rect); a.x=5; a.y=5;
+        group.content.push(a);
+        let b = Object.create(rect); b.x=5, b.y=120+10;
+        b.fill = '#4499FF';
+        group.content.push(b);
+        let c = Object.create(rect); c.x=5, c.y=120*2+15;
+        c.fill = '#FF4499';
+        group.content.push(c);
+        display.show(group);
+</script>    
+</body>
+</html>
