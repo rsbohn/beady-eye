@@ -24,21 +24,22 @@
 // See MVP_PLAN.md for roadmap
 
 const display = {
-  canvas: HTMLCanvas,
+  canvas: HTMLCanvasElement,
   root_group: Group,
-  refresh: function()
-  show: function(group)
+  refresh: function() {...},
+  show: function(group) {...}
 }
 
 const group = {
   content: [],
-  render: function(context)
+  render: function(context) {...}
 }
 
 const rect = {
-  x, y, width, height,
-  fill: color,
-  render: function(context)
+  x: 0, y: 0,
+  width: 100, height: 50,
+  fill: 'color',
+  render: function(context) {...}
 }
         </div>
     <canvas id="display" width="320" height="480"></canvas>
