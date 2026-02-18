@@ -10,6 +10,26 @@ h1 {
     margin: 0;
 }
 
+.info {
+    background-color: #f0f0f0;
+    padding: 8px 16px;
+    border-bottom: 2px solid #ddd;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.info p {
+    margin: 4px 0;
+}
+
+.info a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.info a:hover {
+    text-decoration: underline;
+}
+
 div.main {
     display: flex;
 }

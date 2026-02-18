@@ -9,11 +9,38 @@
 </head>
 <body>
     <h1>&#128065; beady-eye: displayio in javascript</h1>
+    <div class="info">
+        <p><strong>Status:</strong> Early Development / Proof of Concept</p>
+        <p><strong>Links:</strong> 
+            <a href="README.md">README</a> | 
+            <a href="MVP_PLAN.md">MVP Plan</a> | 
+            <a href="CONTRIBUTING.md">Contributing</a> |
+            <a href="https://github.com/rsbohn/beady-eye">GitHub</a>
+        </p>
+    </div>
     <div class="main">
         <div class="code">
-your message goes here
-several lines
-of wonderful text
+// Current demo: Basic shapes
+// See MVP_PLAN.md for roadmap
+
+const display = {
+  canvas: HTMLCanvasElement,
+  root_group: Group,
+  refresh: function() {...},
+  show: function(group) {...}
+}
+
+const group = {
+  content: [],
+  render: function(context) {...}
+}
+
+const rect = {
+  x: 0, y: 0,
+  width: 100, height: 50,
+  fill: 'color',
+  render: function(context) {...}
+}
         </div>
     <canvas id="display" width="320" height="480"></canvas>
     </div>
