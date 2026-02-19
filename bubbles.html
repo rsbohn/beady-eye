@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>beady-eye - Moving Bubbles Demo</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+    <h1>&#128065; beady-eye: Moving Bubbles Demo</h1>
+    <div class="info">
+        <p><strong>Demo:</strong> Animated bubbles with physics simulation</p>
+        <p><strong>Links:</strong> 
+            <a href="index.html">Main Demo</a> | 
+            <a href="README.md">README</a> | 
+            <a href="MVP_PLAN.md">MVP Plan</a> | 
+            <a href="https://github.com/rsbohn/beady-eye">GitHub</a>
+        </p>
+    </div>
+    <div class="main">
+        <div class="code">
+// Moving Bubbles Demo
+// Features:
+// - Circle shape rendering
+// - Animation loop
+// - Velocity-based movement
+// - Boundary collision detection
+// - Bubble bouncing
+
+const bubble = {
+  x: 100, y: 100,
+  radius: 20,
+  vx: 2, vy: 3,
+  fill: 'cyan',
+  render: function(context) {
+    context.fillStyle = this.fill;
+    context.beginPath();
+    context.arc(this.x, this.y, 
+                this.radius, 0, 
+                Math.PI * 2);
+    context.fill();
+  }
+}
+        </div>
+    <canvas id="display" width="640" height="480"></canvas>
+    </div>
+    <script>
+        // Display setup
+        let canvas = document.getElementById("display");
+        let display = {
+            canvas: canvas,
+            root_group: null,
+            animationId: null,
+            refresh: function() {
+                if (this.root_group) {
+                    const context = this.canvas.getContext('2d');
+                    context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.root_group.render(context);
+                }
+            },
+            show: function(group) {
+                this.root_group = group;
+                this.refresh();
+            },
+            startAnimation: function(updateFunc) {
+                const animate = () => {
+                    updateFunc();
+                    this.refresh();
+                    this.animationId = requestAnimationFrame(animate);
+                };
+                animate();
+            },
+            stopAnimation: function() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+        };
+
+        // Group for holding bubbles
+        let group = {
+            content: [],
+            render: function(context) {
+                this.content.forEach(item => item.render(context));
+            }
+        };
+
+        // Circle/Bubble shape prototype
+        let circle = {
+            x: 0, y: 0,
+            radius: 20,
+            vx: 0, vy: 0,
+            fill: 'cyan',
+            render: function(context) {
+                context.fillStyle = this.fill;
+                context.beginPath();
+                context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                context.fill();
+            },
+            update: function(width, height) {
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Bounce off walls
+                if (this.x - this.radius <= 0 || this.x + this.radius >= width) {
+                    this.vx = -this.vx;
+                    // Clamp position to prevent sticking
+                    this.x = Math.max(this.radius, Math.min(width - this.radius, this.x));
+                }
+                if (this.y - this.radius <= 0 || this.y + this.radius >= height) {
+                    this.vy = -this.vy;
+                    // Clamp position to prevent sticking
+                    this.y = Math.max(this.radius, Math.min(height - this.radius, this.y));
+                }
+            }
+        };
+
+        // Generate random color
+        function randomColor() {
+            const colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
+                '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2',
+                '#F8B739', '#52B788', '#E63946', '#A8DADC'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Create bubbles with random properties
+        const numBubbles = 15;
+        for (let i = 0; i < numBubbles; i++) {
+            let bubble = Object.create(circle);
+            bubble.x = Math.random() * (canvas.width - 80) + 40;
+            bubble.y = Math.random() * (canvas.height - 80) + 40;
+            bubble.radius = Math.random() * 20 + 15; // radius between 15-35
+            bubble.vx = (Math.random() - 0.5) * 4; // velocity between -2 and +2
+            bubble.vy = (Math.random() - 0.5) * 4;
+            bubble.fill = randomColor();
+            group.content.push(bubble);
+        }
+
+        // Update function for animation
+        function updateBubbles() {
+            group.content.forEach(bubble => {
+                bubble.update(canvas.width, canvas.height);
+            });
+        }
+
+        // Start the demo
+        display.show(group);
+        display.startAnimation(updateBubbles);
+    </script>    
+</body>
+</html>
