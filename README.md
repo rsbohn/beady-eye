@@ -18,7 +18,7 @@ The project currently demonstrates basic canvas rendering with rectangles and a 
 
 ## Quick Start
 
-Open `index.html` in a web browser to see the current demo.
+Open `index.html` in a web browser to see the current demo, or check out `bubbles.html` for an animated demo with moving bubbles.
 
 ```html
 <!DOCTYPE html>
