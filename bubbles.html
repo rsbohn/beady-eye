@@ -135,7 +135,7 @@ const bubble = {
             bubble.x = Math.random() * (canvas.width - 80) + 40;
             bubble.y = Math.random() * (canvas.height - 80) + 40;
             bubble.radius = Math.random() * 20 + 15; // radius between 15-35
-            bubble.vx = (Math.random() - 0.5) * 4; // velocity between -2 and 2
+            bubble.vx = (Math.random() - 0.5) * 4; // velocity between -2 and +2
             bubble.vy = (Math.random() - 0.5) * 4;
             bubble.fill = randomColor();
             group.content.push(bubble);
