@@ -56,6 +56,16 @@ class Palette:
         return len(self._colors)
 
     def __setitem__(self, index, color):
+        if isinstance(color, tuple):
+            if len(color) != 3:
+                raise ValueError("color tuple must have exactly 3 elements (r, g, b)")
+            r, g, b = color
+            for name, val in (("r", r), ("g", g), ("b", b)):
+                if not (0 <= val <= 255):
+                    raise ValueError(
+                        f"{name} value {val} is out of range 0-255"
+                    )
+            color = (r << 16) | (g << 8) | b
         self._colors[index] = int(color)
 
     def __getitem__(self, index):

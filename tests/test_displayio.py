@@ -37,6 +37,32 @@ class TestPalette(unittest.TestCase):
         self.assertEqual(p[0], 0xFF0000)
         self.assertEqual(p[1], 0x0000FF)
 
+    def test_set_tuple_rgb(self):
+        p = displayio.Palette(2)
+        p[0] = (255, 0, 0)
+        self.assertEqual(p[0], 0xFF0000)
+        p[1] = (0, 128, 64)
+        self.assertEqual(p[1], 0x008040)
+
+    def test_set_tuple_black(self):
+        p = displayio.Palette(1)
+        p[0] = (0, 0, 0)
+        self.assertEqual(p[0], 0x000000)
+
+    def test_set_tuple_wrong_length(self):
+        p = displayio.Palette(1)
+        with self.assertRaises(ValueError):
+            p[0] = (255,)
+        with self.assertRaises(ValueError):
+            p[0] = (255, 0, 0, 0)
+
+    def test_set_tuple_out_of_range(self):
+        p = displayio.Palette(1)
+        with self.assertRaises(ValueError):
+            p[0] = (300, 0, 0)
+        with self.assertRaises(ValueError):
+            p[0] = (0, -1, 0)
+
     def test_transparent_defaults_opaque(self):
         p = displayio.Palette(2)
         self.assertFalse(p.is_transparent(0))
