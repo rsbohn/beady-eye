@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>beady-eye: Pyodide displayio Demo</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+    <h1>&#128065; beady-eye: Pyodide + displayio Demo</h1>
+    <div class="info">
+        <p>Pure Python <strong>displayio</strong> running in the browser via
+           <a href="https://pyodide.org">Pyodide</a>.
+           Scene rendering is pure Python; a single
+           <code>ctx.putImageData()</code> call pushes the pixel buffer to
+           the canvas.</p>
+        <p id="status">Loading Pyodide&hellip;</p>
+        <p><strong>Links:</strong>
+            <a href="index.html">Main Demo</a> |
+            <a href="README.md">README</a> |
+            <a href="https://github.com/rsbohn/beady-eye">GitHub</a>
+        </p>
+    </div>
+    <div class="main">
+        <canvas id="display" width="320" height="240"
+                style="border:1px solid #444;display:block"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+    <script>
+    async function main() {
+        const status = document.getElementById("status");
+
+        status.textContent = "Loading Pyodide\u2026";
+        const pyodide = await loadPyodide();
+
+        status.textContent = "Loading displayio module\u2026";
+        const moduleCode = await fetch("displayio.py").then(r => r.text());
+        pyodide.FS.writeFile("/home/pyodide/displayio.py", moduleCode);
+
+        status.textContent = "Running displayio demo\u2026";
+        await pyodide.runPythonAsync(`
+import sys
+sys.path.insert(0, '/home/pyodide')
+
+import js
+import displayio
+
+canvas = js.document.getElementById('display')
+display = displayio.Display(canvas)
+
+# ── helpers ────────────────────────────────────────────────────────────────
+
+def solid_tilegrid(color, w, h, x=0, y=0):
+    """Return a TileGrid filled with a single opaque colour."""
+    p = displayio.Palette(1)
+    p[0] = color
+    bm = displayio.Bitmap(w, h, 1)
+    bm.fill(0)
+    return displayio.TileGrid(bm, pixel_shader=p, x=x, y=y)
+
+# ── scene ──────────────────────────────────────────────────────────────────
+
+scene = displayio.Group()
+
+# Dark-blue background
+scene.append(solid_tilegrid(0x0a1128, display.width, display.height))
+
+# Three horizontal colour bands
+band_h = display.height // 5
+colours = [0xcc2222, 0xdd7722, 0x228833, 0x2244cc, 0x882299]
+for i, col in enumerate(colours):
+    scene.append(solid_tilegrid(col, display.width - 40, band_h - 2,
+                                x=20, y=i * band_h + 1))
+
+# Checkerboard in the centre
+chk = 8
+cols, rows = 7, 5
+cx = (display.width  - chk * cols) // 2
+cy = (display.height - chk * rows) // 2
+cp = displayio.Palette(2)
+cp[0] = 0xffffff
+cp[1] = 0x222222
+cbm = displayio.Bitmap(chk * cols, chk * rows, 2)
+for row in range(rows):
+    for col in range(cols):
+        v = (row + col) % 2
+        for py in range(chk):
+            for px in range(chk):
+                cbm[col * chk + px, row * chk + py] = v
+scene.append(displayio.TileGrid(cbm, pixel_shader=cp, x=cx, y=cy))
+
+display.show(scene)
+`);
+        status.textContent = "\u2705 displayio scene rendered via Pyodide!";
+    }
+
+    main().catch(err => {
+        document.getElementById("status").textContent = "Error: " + err;
+        console.error(err);
+    });
+    </script>
+</body>
+</html>
