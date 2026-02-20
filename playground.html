@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>beady-eye: displayio Playground</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="site.css" />
+    <style>
+        .playground-layout {
+            display: flex;
+            height: calc(100vh - 120px);
+            min-height: 400px;
+        }
+        .editor-panel {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 50%;
+            min-width: 0;
+            background: #1e1e1e;
+        }
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: #2d2d2d;
+            border-bottom: 2px solid #444;
+        }
+        .editor-toolbar label {
+            color: #ccc;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        #play-btn {
+            background: #2ea84f;
+            color: white;
+            border: none;
+            padding: 6px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+        }
+        #play-btn:hover:not(:disabled) {
+            background: #27903f;
+        }
+        #play-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #code-editor {
+            flex: 1;
+            width: 100%;
+            resize: none;
+            border: none;
+            outline: none;
+            padding: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            tab-size: 4;
+            box-sizing: border-box;
+        }
+        .canvas-panel {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 50%;
+            min-width: 0;
+            background: #111;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        canvas#display {
+            flex: 0 0 auto;
+            background-color: #000;
+            border: 2px solid #555;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #error-output {
+            display: none;
+            color: #ff6b6b;
+            font-family: monospace;
+            font-size: 0.85em;
+            padding: 8px 12px;
+            background: #2a0000;
+            border-top: 1px solid #600;
+            white-space: pre-wrap;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>&#128065; beady-eye: displayio Playground</h1>
+    <div class="info">
+        <p>Write Python <strong>displayio</strong> code and press <strong>PLAY</strong> to render it on the canvas.</p>
+        <p id="status">Loading Pyodide&hellip;</p>
+        <p><strong>Links:</strong>
+            <a href="index.html">Main Demo</a> |
+            <a href="pyodide-demo.html">Pyodide Demo</a> |
+            <a href="README.md">README</a> |
+            <a href="https://github.com/rsbohn/beady-eye">GitHub</a>
+        </p>
+    </div>
+
+    <div class="playground-layout">
+        <div class="editor-panel">
+            <div class="editor-toolbar">
+                <button id="play-btn" disabled>&#9654; PLAY</button>
+                <label>Python &bull; displayio</label>
+            </div>
+            <textarea id="code-editor" spellcheck="false">import displayio
+
+# Get the display (canvas is already set up for you)
+display = displayio.Display(canvas, width=320, height=240)
+
+# --- Helper: filled rectangle ---
+def solid_rect(color, w, h, x=0, y=0):
+    p = displayio.Palette(1)
+    p[0] = color
+    bm = displayio.Bitmap(w, h, 1)
+    bm.fill(0)
+    return displayio.TileGrid(bm, pixel_shader=p, x=x, y=y)
+
+# --- Build your scene ---
+scene = displayio.Group()
+
+# Dark background
+scene.append(solid_rect(0x0a1128, display.width, display.height))
+
+# A red rectangle
+scene.append(solid_rect(0xcc2222, 200, 60, x=60, y=30))
+
+# A green rectangle
+scene.append(solid_rect(0x228833, 200, 60, x=60, y=110))
+
+# A blue rectangle
+scene.append(solid_rect(0x2244cc, 200, 60, x=60, y=170))
+
+# Show the scene
+display.show(scene)
+</textarea>
+            <div id="error-output"></div>
+        </div>
+        <div class="canvas-panel">
+            <canvas id="display" width="320" height="240"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+    <script>
+    let pyodide = null;
+
+    async function initPyodide() {
+        const status = document.getElementById("status");
+        const playBtn = document.getElementById("play-btn");
+
+        try {
+            status.textContent = "Loading Pyodide\u2026";
+            pyodide = await loadPyodide();
+
+            status.textContent = "Loading displayio module\u2026";
+            const moduleCode = await fetch("displayio.py").then(r => r.text());
+            pyodide.FS.writeFile("/home/pyodide/displayio.py", moduleCode);
+
+            // Make the canvas available to Python as a global
+            pyodide.globals.set("canvas", document.getElementById("display"));
+
+            await pyodide.runPythonAsync(`
+import sys
+sys.path.insert(0, '/home/pyodide')
+`);
+
+            status.textContent = "\u2705 Ready. Edit the code and press PLAY.";
+            playBtn.disabled = false;
+        } catch (err) {
+            status.textContent = "Error loading Pyodide: " + err;
+            console.error(err);
+        }
+    }
+
+    async function runSketch() {
+        const playBtn = document.getElementById("play-btn");
+        const status = document.getElementById("status");
+        const errorOutput = document.getElementById("error-output");
+        const code = document.getElementById("code-editor").value;
+
+        playBtn.disabled = true;
+        errorOutput.style.display = "none";
+        errorOutput.textContent = "";
+        status.textContent = "Running\u2026";
+
+        // Clear canvas before running
+        const canvas = document.getElementById("display");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        try {
+            // Re-expose the canvas each run so display= works
+            pyodide.globals.set("canvas", canvas);
+            await pyodide.runPythonAsync(code);
+            status.textContent = "\u2705 Done.";
+        } catch (err) {
+            status.textContent = "\u274c Error (see below)";
+            errorOutput.textContent = String(err);
+            errorOutput.style.display = "block";
+            console.error(err);
+        } finally {
+            playBtn.disabled = false;
+        }
+    }
+
+    document.getElementById("play-btn").addEventListener("click", runSketch);
+
+    // Allow Tab key in the editor to insert spaces
+    document.getElementById("code-editor").addEventListener("keydown", function(e) {
+        if (e.key === "Tab") {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+    });
+
+    initPyodide();
+    </script>
+</body>
+</html>
