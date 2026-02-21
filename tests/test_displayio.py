@@ -11,7 +11,7 @@ import sys
 import unittest
 
 # Locate the module one directory above this file.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import displayio
 

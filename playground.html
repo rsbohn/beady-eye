@@ -104,7 +104,7 @@
         <p id="status">Loading Pyodide&hellip;</p>
         <p><strong>Links:</strong>
             <a href="index.html">Main Demo</a> |
-            <a href="pyodide-demo.html">Pyodide Demo</a> |
+            <a href="examples/pyodide-demo.html">Pyodide Demo</a> |
             <a href="README.md">README</a> |
             <a href="https://github.com/rsbohn/beady-eye">GitHub</a>
         </p>
@@ -154,6 +154,7 @@ display.show(scene)
         </div>
     </div>
 
+    <script src="src/displayio.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
     <script>
     let pyodide = null;
@@ -163,12 +164,14 @@ display.show(scene)
         const playBtn = document.getElementById("play-btn");
 
         try {
-            status.textContent = "Loading Pyodide\u2026";
-            pyodide = await loadPyodide();
+            if (!beadyeyePyodide.ensureHttp(status)) {
+                return;
+            }
 
-            status.textContent = "Loading displayio module\u2026";
-            const moduleCode = await fetch("displayio.py").then(r => r.text());
-            pyodide.FS.writeFile("/home/pyodide/displayio.py", moduleCode);
+            pyodide = await beadyeyePyodide.loadPyodideAndDisplayio({
+                statusElement: status,
+                displayioPath: "src/displayio.py",
+            });
 
             // Make the canvas available to Python as a global
             pyodide.globals.set("canvas", document.getElementById("display"));

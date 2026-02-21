@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>beady-eye: Radiator Demo</title>
+    <link rel="icon" type="image/png" href="../favicon.ico" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+    <h1>&#128065; beady-eye: Radiator Demo</h1>
+    <div class="info">
+        <p>Bloons TD6 themed information radiator running in Pyodide.</p>
+        <p id="status">Loading Pyodide&hellip;</p>
+        <p><strong>Links:</strong>
+            <a href="../index.html">Main Demo</a> |
+            <a href="pyodide-demo.html">Pyodide Demo</a> |
+            <a href="../README.md">README</a>
+        </p>
+    </div>
+    <div class="main">
+        <canvas id="display" width="800" height="480"
+                style="border:1px solid #444;display:block"></canvas>
+    </div>
+
+    <script src="../src/displayio.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+    <script>
+    async function main() {
+        const status = document.getElementById("status");
+
+        if (!beadyeyePyodide.ensureHttp(status)) {
+            return;
+        }
+
+        const pyodide = await beadyeyePyodide.loadPyodideAndDisplayio({
+            statusElement: status,
+            displayioPath: "../src/displayio.py",
+        });
+
+        status.textContent = "Loading radiator demo\u2026";
+        await beadyeyePyodide.loadPythonFile(pyodide, {
+            sourcePath: "radiator.py",
+            targetPath: "/home/pyodide/radiator.py",
+        });
+
+        status.textContent = "Running radiator demo\u2026";
+        await pyodide.runPythonAsync(`
+import sys
+sys.path.insert(0, '/home/pyodide')
+
+import radiator
+`);
+
+        status.textContent = "\u2705 radiator demo running";
+    }
+
+    main().catch(err => {
+        document.getElementById("status").textContent = "Error: " + err;
+        console.error(err);
+    });
+    </script>
+</body>
+</html>

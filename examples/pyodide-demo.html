@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <title>beady-eye: Pyodide displayio Demo</title>
-    <link rel="icon" type="image/png" href="favicon.ico" />
+    <link rel="icon" type="image/png" href="../favicon.ico" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="../site.css" />
 </head>
 <body>
     <h1>&#128065; beady-eye: Pyodide + displayio Demo</h1>
@@ -17,8 +17,8 @@
            the canvas.</p>
         <p id="status">Loading Pyodide&hellip;</p>
         <p><strong>Links:</strong>
-            <a href="index.html">Main Demo</a> |
-            <a href="README.md">README</a> |
+            <a href="../index.html">Main Demo</a> |
+            <a href="../README.md">README</a> |
             <a href="https://github.com/rsbohn/beady-eye">GitHub</a>
         </p>
     </div>
@@ -27,17 +27,20 @@
                 style="border:1px solid #444;display:block"></canvas>
     </div>
 
+    <script src="../src/displayio.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
     <script>
     async function main() {
         const status = document.getElementById("status");
 
-        status.textContent = "Loading Pyodide\u2026";
-        const pyodide = await loadPyodide();
+        if (!beadyeyePyodide.ensureHttp(status)) {
+            return;
+        }
 
-        status.textContent = "Loading displayio module\u2026";
-        const moduleCode = await fetch("displayio.py").then(r => r.text());
-        pyodide.FS.writeFile("/home/pyodide/displayio.py", moduleCode);
+        const pyodide = await beadyeyePyodide.loadPyodideAndDisplayio({
+            statusElement: status,
+            displayioPath: "../src/displayio.py",
+        });
 
         status.textContent = "Running displayio demo\u2026";
         await pyodide.runPythonAsync(`
